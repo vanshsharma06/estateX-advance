@@ -10,6 +10,7 @@ const navLinks = [
   { label: 'About', href: '#about' },
   { label: 'Services', href: '#services' },
   { label: 'Timeline', href: '#timeline' },
+  { label: 'Founders', href: '/founders' },
   { label: 'Contact', href: '/contact' }
 ]
 
@@ -237,6 +238,13 @@ export default function Navbar() {
                   </button>
                 )
               ))}
+              <Link
+                to="/properties"
+                className="block w-full text-left text-gold text-lg py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Properties
+              </Link>
               <button
                 onClick={() => scrollToSection('#contact')}
                 className="block w-full text-left text-gold text-lg py-2"

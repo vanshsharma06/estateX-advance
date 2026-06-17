@@ -119,6 +119,14 @@ function AppContent({ isLoading, setIsLoading }) {
             </>
           } />
 
+          {/* Founders Page */}
+          <Route path="/founders" element={
+            <>
+              <CinematicFounderSection />
+              <Footer />
+            </>
+          } />
+
           {/* Contact Page */}
           <Route path="/contact" element={
             <>
