@@ -30,10 +30,10 @@ function AppContent({ isLoading, setIsLoading }) {
   // Check if current route is an admin route
   const isAdminRoute = location.pathname.startsWith('/admin')
 
-  // Clean up ScrollTriggers on route change
+  // Refresh ScrollTriggers on route change (don't kill - let components clean up)
   useEffect(() => {
-    // Kill all ScrollTriggers when route changes
-    ScrollTrigger.getAll().forEach(trigger => trigger.kill())
+    // Each component uses gsap.context() for proper cleanup
+    // Just refresh triggers after route change
     ScrollTrigger.refresh()
   }, [location.pathname])
 

@@ -56,11 +56,9 @@ function FounderImage({ src, placeholder, alt, className = '' }) {
 
   return (
     <div
-      ref={(el) => { if (el) el.style.opacity = '0' }}
       className={`founder-image-container relative w-full h-full overflow-hidden bg-black/20 ${className}`}
     >
       <img
-        ref={(el) => { if (el) el.style.opacity = '0' }}
         src={showPlaceholder ? placeholder : imgSrc}
         alt={alt}
         onError={handleError}
