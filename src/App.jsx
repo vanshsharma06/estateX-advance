@@ -119,6 +119,14 @@ function AppContent({ isLoading, setIsLoading }) {
             </>
           } />
 
+          {/* Contact Page */}
+          <Route path="/contact" element={
+            <>
+              <ContactSection />
+              <Footer />
+            </>
+          } />
+
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route

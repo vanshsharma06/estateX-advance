@@ -51,8 +51,8 @@ function FounderImage({ src, placeholder, alt, className = '' }) {
     setIsLoaded(true)
   }
 
-  // Show placeholder immediately if no valid src, or after error/load
-  const showPlaceholder = !isValidSrc || hasError || isLoaded
+  // Show placeholder only if no valid src or there was an error
+  const showPlaceholder = !isValidSrc || hasError
 
   return (
     <div
@@ -61,7 +61,7 @@ function FounderImage({ src, placeholder, alt, className = '' }) {
     >
       <img
         ref={(el) => { if (el) el.style.opacity = '0' }}
-        src={showPlaceholder ? imgSrc : placeholder}
+        src={showPlaceholder ? placeholder : imgSrc}
         alt={alt}
         onError={handleError}
         onLoad={handleLoad}
