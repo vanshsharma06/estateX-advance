@@ -36,25 +36,38 @@ export default function ServicesSection() {
   const sectionRef = useRef(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.service-card',
-        { y: 80, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          stagger: 0.15,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 70%',
-            toggleActions: 'play none none reverse'
+    let ctx
+    try {
+      ctx = gsap.context(() => {
+        gsap.fromTo('.service-card',
+          { y: 80, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top 70%',
+              toggleActions: 'play none none reverse'
+            }
           }
-        }
-      )
-    }, sectionRef)
+        )
+      }, sectionRef)
+    } catch (e) {
+      console.warn('[ServicesSection] GSAP initialization error:', e)
+    }
 
-    return () => ctx.revert()
+    return () => {
+      if (ctx) {
+        try {
+          ctx.revert()
+        } catch (e) {
+          console.warn('[ServicesSection] GSAP cleanup error:', e)
+        }
+      }
+    }
   }, [])
 
   return (

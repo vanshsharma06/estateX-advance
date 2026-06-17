@@ -99,7 +99,7 @@ export default function ContactSection() {
 
   if (isSubmitted) {
     return (
-      <section ref={sectionRef} className="relative py-32 bg-black">
+      <section ref={sectionRef} className="relative py-16 md:py-32 bg-black">
         <div className="max-w-xl mx-auto px-4 text-center">
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
@@ -122,7 +122,7 @@ export default function ContactSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-32 bg-black overflow-hidden"
+      className="relative py-16 md:py-32 bg-black overflow-hidden"
     >
       {/* Background */}
       <div className="absolute inset-0">
@@ -130,7 +130,7 @@ export default function ContactSection() {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
           {/* Left - Form */}
           <div>
             <motion.div

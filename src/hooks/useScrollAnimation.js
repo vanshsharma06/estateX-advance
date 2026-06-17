@@ -16,11 +16,13 @@ export function useScrollAnimation(options = {}) {
   } = options
 
   const ref = useRef(null)
+  const scrollTriggerRef = useRef(null)
 
   useEffect(() => {
     const element = ref.current
     if (!element) return
 
+    // Create the animation with ScrollTrigger
     gsap.fromTo(
       element,
       initial,
@@ -36,6 +38,23 @@ export function useScrollAnimation(options = {}) {
         }
       }
     )
+
+    // Store reference for cleanup
+    scrollTriggerRef.current = element
+
+    // Cleanup function - CRITICAL for preventing memory leaks and removeChild errors
+    return () => {
+      if (scrollTriggerRef.current) {
+        // Kill any ScrollTriggers associated with this element
+        ScrollTrigger.getAll().forEach(st => {
+          if (st.trigger === scrollTriggerRef.current) {
+            st.kill()
+          }
+        })
+        // Clear the reference
+        scrollTriggerRef.current = null
+      }
+    }
   }, [animation, initial, duration, ease, trigger, toggleActions, scrub])
 
   return ref
@@ -73,6 +92,16 @@ export function useStaggerAnimation(items, options = {}) {
         }
       }
     )
+
+    // Cleanup
+    return () => {
+      // Kill ScrollTriggers for this element
+      ScrollTrigger.getAll().forEach(st => {
+        if (st.trigger === element) {
+          st.kill()
+        }
+      })
+    }
   }, [animation, initial, duration, ease, stagger, trigger, toggleActions])
 
   return ref
@@ -95,6 +124,15 @@ export function useParallax(speed = 0.5) {
         scrub: true
       }
     })
+
+    // Cleanup
+    return () => {
+      ScrollTrigger.getAll().forEach(st => {
+        if (st.trigger === element) {
+          st.kill()
+        }
+      })
+    }
   }, [speed])
 
   return ref

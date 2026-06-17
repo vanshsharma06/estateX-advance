@@ -76,76 +76,91 @@ export default function CinematicFounderSection() {
   const titleRef = useRef(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Set initial states - founders start hidden and off-screen
-      gsap.set(founder1Ref.current, { x: -300, opacity: 0, scale: 0.9 })
-      gsap.set(founder2Ref.current, { x: 300, opacity: 0, scale: 0.9 })
-      gsap.set(titleRef.current, { opacity: 0, y: 30 })
+    // Use try-catch to prevent errors from breaking the component
+    let ctx
+    try {
+      ctx = gsap.context(() => {
+        // Set initial states - founders start hidden and off-screen
+        gsap.set(founder1Ref.current, { x: -300, opacity: 0, scale: 0.9 })
+        gsap.set(founder2Ref.current, { x: 300, opacity: 0, scale: 0.9 })
+        gsap.set(titleRef.current, { opacity: 0, y: 30 })
 
-      // Set initial states for images inside each founder card
-      gsap.set('.founder-image-container', { opacity: 0 })
-      gsap.set('.founder-image', { opacity: 0 })
+        // Set initial states for images inside each founder card
+        gsap.set('.founder-image-container', { opacity: 0 })
+        gsap.set('.founder-image', { opacity: 0 })
 
-      // Pinned section animation - scroll-driven timeline
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: '+=200%',
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1
+        // Pinned section animation - scroll-driven timeline
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top top',
+            end: '+=200%',
+            pin: true,
+            scrub: 1,
+            anticipatePin: 1
+          }
+        })
+
+        // Title reveal - fades in and moves up
+        tl.to(titleRef.current, {
+          opacity: 1,
+          y: 0,
+          duration: 0.4,
+          ease: 'power2.out'
+        }, 0)
+
+        // Founder 1 slides in from far left with opacity and scale
+        tl.to(founder1Ref.current,
+          {
+            x: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.6,
+            ease: 'power3.out'
+          },
+          0.15
+        )
+
+        // Founder 2 slides in from far right with opacity and scale
+        tl.to(founder2Ref.current,
+          {
+            x: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.6,
+            ease: 'power3.out'
+          },
+          0.3
+        )
+
+        // Image reveal after card is visible
+        tl.to('.founder-image-container', {
+          opacity: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        }, 0.5)
+
+        tl.to('.founder-image', {
+          opacity: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        }, 0.6)
+
+      }, sectionRef)
+    } catch (e) {
+      console.warn('[CinematicFounderSection] GSAP initialization error:', e)
+    }
+
+    // Cleanup with error handling
+    return () => {
+      if (ctx) {
+        try {
+          ctx.revert()
+        } catch (e) {
+          console.warn('[CinematicFounderSection] GSAP cleanup error:', e)
         }
-      })
-
-      // Title reveal - fades in and moves up
-      tl.to(titleRef.current, {
-        opacity: 1,
-        y: 0,
-        duration: 0.4,
-        ease: 'power2.out'
-      }, 0)
-
-      // Founder 1 slides in from far left with opacity and scale
-      tl.to(founder1Ref.current,
-        {
-          x: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: 'power3.out'
-        },
-        0.15
-      )
-
-      // Founder 2 slides in from far right with opacity and scale
-      tl.to(founder2Ref.current,
-        {
-          x: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: 'power3.out'
-        },
-        0.3
-      )
-
-      // Image reveal after card is visible
-      tl.to('.founder-image-container', {
-        opacity: 1,
-        duration: 0.3,
-        ease: 'power2.out'
-      }, 0.5)
-
-      tl.to('.founder-image', {
-        opacity: 1,
-        duration: 0.3,
-        ease: 'power2.out'
-      }, 0.6)
-
-    }, sectionRef)
-
-    return () => ctx.revert()
+      }
+    }
   }, [])
 
   return (

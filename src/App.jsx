@@ -15,6 +15,7 @@ import TestimonialsSection from './components/testimonials/TestimonialsSection'
 import StatsSection from './components/stats/StatsSection'
 import ContactSection from './components/contact/ContactSection'
 import Scene from './components/canvas/Scene'
+import SceneErrorBoundary from './components/canvas/SceneErrorBoundary'
 import PropertiesPage from './pages/properties/PropertiesPage'
 import PropertyDetailsPage from './pages/properties/PropertyDetailsPage'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
@@ -56,9 +57,11 @@ function AppContent({ isLoading, setIsLoading }) {
           className="fixed inset-0 pointer-events-none"
           style={{ zIndex: -1 }}
         >
-          <Suspense fallback={<div style={{ background: '#050508' }} />}>
-            <Scene />
-          </Suspense>
+          <SceneErrorBoundary>
+            <Suspense fallback={<div style={{ background: '#050508' }} />}>
+              <Scene />
+            </Suspense>
+          </SceneErrorBoundary>
         </div>
 
         {/* Routes */}
@@ -177,13 +180,32 @@ function App() {
 
     gsap.ticker.lagSmoothing(0)
 
-    // Cleanup
+    // Cleanup - defensive to prevent removeChild errors
     return () => {
-      lenis.destroy()
-      gsap.ticker.remove(lenis.raf)
-      // Clean up all ScrollTriggers on unmount
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
-      ScrollTrigger.refresh()
+      try {
+        // First kill all ScrollTriggers to prevent conflicts
+        ScrollTrigger.getAll().forEach(trigger => {
+          try {
+            trigger.kill()
+          } catch (e) {
+            // Ignore errors during cleanup
+            console.warn('[App] ScrollTrigger kill error:', e)
+          }
+        })
+
+        // Then destroy Lenis
+        lenis.destroy()
+
+        // Remove ticker
+        gsap.ticker.remove(lenis.raf)
+
+        // Refresh triggers after cleanup
+        ScrollTrigger.refresh()
+      } catch (e) {
+        console.warn('[App] Cleanup error:', e)
+        // Force refresh even if cleanup fails
+        ScrollTrigger.refresh()
+      }
     }
   }, [])
 

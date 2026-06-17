@@ -93,23 +93,36 @@ export default function TimelineSection() {
   const sectionRef = useRef(null)
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo('.timeline-line',
-        { scaleY: 0 },
-        {
-          scaleY: 1,
-          duration: 1.5,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 60%',
-            toggleActions: 'play none none reverse'
+    let ctx
+    try {
+      ctx = gsap.context(() => {
+        gsap.fromTo('.timeline-line',
+          { scaleY: 0 },
+          {
+            scaleY: 1,
+            duration: 1.5,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top 60%',
+              toggleActions: 'play none none reverse'
+            }
           }
-        }
-      )
-    }, sectionRef)
+        )
+      }, sectionRef)
+    } catch (e) {
+      console.warn('[TimelineSection] GSAP initialization error:', e)
+    }
 
-    return () => ctx.revert()
+    return () => {
+      if (ctx) {
+        try {
+          ctx.revert()
+        } catch (e) {
+          console.warn('[TimelineSection] GSAP cleanup error:', e)
+        }
+      }
+    }
   }, [])
 
   return (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -18,6 +18,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isPropertiesVisible, setIsPropertiesVisible] = useState(false)
+  const navigate = useNavigate()
 
   const logoRef = useRef(null)
   const propertiesRef = useRef(null)
@@ -39,53 +40,66 @@ export default function Navbar() {
 
   // GSAP animation for "PROPERTIES" text
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (isPropertiesVisible) {
-        // Animate IN - "PROPERTIES" appears
-        gsap.fromTo(propertiesRef.current,
-          { opacity: 0, y: 10, filter: 'blur(10px)' },
-          {
-            opacity: 1,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: 1,
-            ease: 'power3.out'
-          }
-        )
+    let ctx
+    try {
+      ctx = gsap.context(() => {
+        if (isPropertiesVisible) {
+          // Animate IN - "PROPERTIES" appears
+          gsap.fromTo(propertiesRef.current,
+            { opacity: 0, y: 10, filter: 'blur(10px)' },
+            {
+              opacity: 1,
+              y: 0,
+              filter: 'blur(0px)',
+              duration: 1,
+              ease: 'power3.out'
+            }
+          )
 
-        // Letter-by-letter reveal for "PROPERTIES"
-        gsap.fromTo(propertiesLettersRef.current,
-          { opacity: 0, y: 20 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            stagger: 0.05,
-            ease: 'power3.out',
-            delay: 0.2
-          }
-        )
-      } else {
-        // Animate OUT - "PROPERTIES" disappears
-        gsap.to(propertiesRef.current, {
-          opacity: 0,
-          y: -10,
-          filter: 'blur(5px)',
-          duration: 0.6,
-          ease: 'power3.in'
-        })
+          // Letter-by-letter reveal for "PROPERTIES"
+          gsap.fromTo(propertiesLettersRef.current,
+            { opacity: 0, y: 20 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              stagger: 0.05,
+              ease: 'power3.out',
+              delay: 0.2
+            }
+          )
+        } else {
+          // Animate OUT - "PROPERTIES" disappears
+          gsap.to(propertiesRef.current, {
+            opacity: 0,
+            y: -10,
+            filter: 'blur(5px)',
+            duration: 0.6,
+            ease: 'power3.in'
+          })
 
-        gsap.to(propertiesLettersRef.current, {
-          opacity: 0,
-          y: -10,
-          duration: 0.4,
-          stagger: 0.02,
-          ease: 'power3.in'
-        })
+          gsap.to(propertiesLettersRef.current, {
+            opacity: 0,
+            y: -10,
+            duration: 0.4,
+            stagger: 0.02,
+            ease: 'power3.in'
+          })
+        }
+      })
+    } catch (e) {
+      console.warn('[Navbar] GSAP initialization error:', e)
+    }
+
+    return () => {
+      if (ctx) {
+        try {
+          ctx.revert()
+        } catch (e) {
+          console.warn('[Navbar] GSAP cleanup error:', e)
+        }
       }
-    })
-
-    return () => ctx.revert()
+    }
   }, [isPropertiesVisible])
 
   const scrollToSection = (href) => {
@@ -238,18 +252,14 @@ export default function Navbar() {
                   </button>
                 )
               ))}
-              <Link
-                to="/properties"
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false)
+                  navigate('/properties')
+                }}
                 className="block w-full text-left text-gold text-lg py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
               >
                 Properties
-              </Link>
-              <button
-                onClick={() => scrollToSection('#contact')}
-                className="block w-full text-left text-gold text-lg py-2"
-              >
-                Inquire Now →
               </button>
             </div>
           </motion.div>

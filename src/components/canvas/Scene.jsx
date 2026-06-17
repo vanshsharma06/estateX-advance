@@ -1,4 +1,4 @@
-import { Suspense, useRef, useEffect, useCallback } from 'react'
+import { Suspense, useRef, useEffect, useCallback, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Preload, Environment } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
@@ -11,6 +11,8 @@ import LuxuryCitySkyline from '../scene/LuxuryCitySkyline'
 import LuxuryFloor from '../scene/LuxuryFloor'
 import VolumetricLights from '../scene/VolumetricLights'
 import LuxuryParticles from '../scene/LuxuryParticles'
+
+import { isLowPerformanceDevice, shouldEnablePostProcessing, getRecommendedDPR } from '../../utils/mobileDetect'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -115,7 +117,9 @@ function SceneAtmosphere() {
 }
 
 function SceneContent() {
-  console.log('[Scene] Rendering luxury cinematic content')
+  const enablePostProcessing = shouldEnablePostProcessing()
+
+  console.log('[Scene] Rendering luxury cinematic content', { enablePostProcessing })
 
   return (
     <>
@@ -151,36 +155,75 @@ function SceneContent() {
       {/* Particles */}
       <LuxuryParticles />
 
-      {/* Post-processing */}
-      <EffectComposer>
-        <Bloom
-          intensity={0.8}
-          luminanceThreshold={0.3}
-          luminanceSmoothing={0.9}
-          mipmapBlur
-        />
-        <Vignette
-          offset={0.35}
-          darkness={0.5}
-        />
-      </EffectComposer>
+      {/* Post-processing - only enable on high-performance devices */}
+      {enablePostProcessing ? (
+        <EffectComposer>
+          <Bloom
+            intensity={0.8}
+            luminanceThreshold={0.3}
+            luminanceSmoothing={0.9}
+            mipmapBlur
+          />
+          <Vignette
+            offset={0.35}
+            darkness={0.5}
+          />
+        </EffectComposer>
+      ) : (
+        // Simplified post-processing for mobile - just Vignette
+        <EffectComposer>
+          <Vignette
+            offset={0.35}
+            darkness={0.4}
+          />
+        </EffectComposer>
+      )}
     </>
   )
 }
 
 export default function Scene() {
   const canvasRef = useRef(null)
+  const [hasFailed, setHasFailed] = useState(false)
+  const [contextLost, setContextLost] = useState(false)
+
   console.log('[Scene] Canvas rendering')
 
-  // Handle WebGL context loss
+  // Check device performance once
+  const isLowPerf = isLowPerformanceDevice()
+  const dpr = getRecommendedDPR()
+
+  console.log('[Scene] Device performance check:', { isLowPerf, dpr })
+
+  // Handle WebGL context loss gracefully
   const handleContextLost = useCallback((event) => {
     event.preventDefault()
-    console.warn('[Scene] WebGL context lost, preventing default')
+    console.warn('[Scene] WebGL context lost')
+    setContextLost(true)
   }, [])
 
   const handleContextRestored = useCallback(() => {
     console.log('[Scene] WebGL context restored')
+    setContextLost(false)
   }, [])
+
+  // Handle renderer errors
+  const handleError = useCallback((error) => {
+    console.error('[Scene] Renderer error:', error)
+    setHasFailed(true)
+  }, [])
+
+  // If Scene has failed, render nothing (error boundary will show main content)
+  if (hasFailed) {
+    console.log('[Scene] Scene failed, rendering nothing')
+    return null
+  }
+
+  // If context is lost, render nothing temporarily
+  if (contextLost) {
+    console.log('[Scene] Context lost, rendering nothing')
+    return null
+  }
 
   return (
     <div
@@ -194,27 +237,51 @@ export default function Scene() {
         ref={canvasRef}
         camera={{ position: [0, 3, 22], fov: 50 }}
         gl={{
-          antialias: true,
+          antialias: !isLowPerf, // Disable antialias on mobile
           alpha: false,
-          powerPreference: 'high-performance',
+          powerPreference: isLowPerf ? 'low-power' : 'high-performance',
           stencil: false,
           depth: true,
-          preserveDrawingBuffer: true
+          preserveDrawingBuffer: false // Don't preserve on mobile to save memory
         }}
-        dpr={[1, 2]}
-        onCreated={({ gl }) => {
+        dpr={dpr}
+        onCreated={({ gl, renderer }) => {
           console.log('[Scene] Canvas created - luxury scene ready')
-          // Handle context loss
-          gl.domElement.addEventListener('webglcontextlost', handleContextLost, false)
-          gl.domElement.addEventListener('webglcontextrestored', handleContextRestored, false)
+
+          // Set up error handling for the renderer
+          try {
+            renderer?.setErrorHandler?.(handleError)
+          } catch (e) {
+            console.warn('[Scene] setErrorHandler not available')
+          }
+
+          // Handle context loss with try-catch
+          try {
+            gl.domElement.addEventListener('webglcontextlost', handleContextLost, false)
+            gl.domElement.addEventListener('webglcontextrestored', handleContextRestored, false)
+          } catch (e) {
+            console.warn('[Scene] Event listener setup failed:', e)
+          }
         }}
         onUnmounted={({ gl }) => {
-          // Clean up event listeners
-          gl.domElement.removeEventListener('webglcontextlost', handleContextLost, false)
-          gl.domElement.removeEventListener('webglcontextrestored', handleContextRestored, false)
-          // Dispose renderer
-          gl.dispose()
+          // Clean up event listeners with try-catch to prevent errors
+          try {
+            if (gl?.domElement) {
+              gl.domElement.removeEventListener('webglcontextlost', handleContextLost, false)
+              gl.domElement.removeEventListener('webglcontextrestored', handleContextRestored, false)
+            }
+          } catch (e) {
+            console.warn('[Scene] Event listener cleanup failed:', e)
+          }
+
+          // Dispose renderer with error handling
+          try {
+            gl?.dispose?.()
+          } catch (e) {
+            console.warn('[Scene] Renderer dispose failed:', e)
+          }
         }}
+        onError={handleError}
       >
         <Suspense fallback={null}>
           <SceneContent />
