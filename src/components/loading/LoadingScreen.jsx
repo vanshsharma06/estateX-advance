@@ -5,16 +5,6 @@ export default function LoadingScreen({ onComplete }) {
   const [progress, setProgress] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
 
-  // Safety timeout - ensures loading completes even if there's an error
-  useEffect(() => {
-    const safetyTimer = setTimeout(() => {
-      console.warn('[LoadingScreen] Safety timeout triggered - forcing completion')
-      setIsComplete(true)
-    }, 5000) // 5 second max load time
-
-    return () => clearTimeout(safetyTimer)
-  }, [])
-
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress(prev => {

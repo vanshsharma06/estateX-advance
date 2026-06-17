@@ -272,8 +272,9 @@ export default function ContactSection() {
               transition={{ delay: 0.3, duration: 0.6 }}
             >
               {/* Decorative */}
-              <div className="text-6xl text-gold/20 mb-8" style={{ fontFamily: 'var(--font-heading)' }}>
-                UP16
+              <div className="text-6xl text-gold/100 mb-8" style={{ fontFamily: 'var(--font-heading)' }}>
+                <div>UP16</div>
+                <div className="text-3xl tracking-widest">PROPERTIES</div>
               </div>
 
               <h3

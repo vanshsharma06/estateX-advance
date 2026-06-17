@@ -36,9 +36,10 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
-            <h3 className="gold-text text-3xl font-bold tracking-[0.2em] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
-              UP16
-            </h3>
+            <div className="text-3xl text-gold/100 mb-3" style={{ fontFamily: 'var(--font-heading)' }}>
+                <div>UP16</div>
+                <div className="text-3xl tracking-widest">PROPERTIES</div>
+              </div>
             <p className="text-silver-muted text-sm leading-relaxed mb-6">
               Redefining luxury real estate for the world&apos;s most discerning clients. Creating legacies that transcend generations.
             </p>
